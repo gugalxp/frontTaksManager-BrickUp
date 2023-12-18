@@ -1,41 +1,40 @@
-import React, { useState, useEffect } from 'react';
-import { Modal, Button, Input, Upload, message, Select } from 'antd';
+import React, { useState } from 'react';
+import { Modal, Button, Input, Upload, message as antdMessage, Select } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
+import { connect } from 'react-redux';
+import { updateTask } from '../actions/taskActions';
 
 const { Option } = Select;
 
-
-const EditTaskModal = ({ visible, onCancel, onEditTask, taskToEdit }) => {
+const EditTaskModal = ({ taskKey, visible, onCancel, updateTask }) => {
   const [fileList, setFileList] = useState([]);
   const [title, setTitle] = useState('');
   const [status, setStatus] = useState('Pendente');
   const [modalKey, setModalKey] = useState(null);
 
-  useEffect(() => {
-    // Atualiza os estados ao receber uma nova tarefa para editar
-    if (taskToEdit) {
-      setTitle(taskToEdit.title);
-      setStatus(taskToEdit.completed ? 'Concluído' : 'Pendente');
-      setFileList([{ uid: '-1', url: taskToEdit.photoPath }]);
-    }
-  }, [taskToEdit]);
-
   const handleEditTask = () => {
     if (!title) {
-      message.error('Por favor, insira um título para a tarefa.');
+      antdMessage.error('Por favor, insira um título para a tarefa.');
       return;
     }
 
-    // Obtém a URL da imagem a partir do fileList
+    if (title.length > 30) {
+      antdMessage.error('O título não pode ter mais de 30 caracteres.');
+      return;
+    }
+
     const photoPath = fileList.length > 0 ? fileList[0].url : null;
 
-    // Chame a função onEditTask com os dados editados da tarefa
-    onEditTask({
-      id: taskToEdit.id,
+    // Usando taskKey como o identificador na ação updateTask
+    updateTask({
+      id: taskKey,
       title: title,
       completed: status === 'Concluído',
       photoPath: photoPath,
     });
+
+    // Mostra a mensagem de sucesso ao editar a tarefa
+    antdMessage.success('Tarefa editada com sucesso!');
 
     setFileList([]);
     setTitle('');
@@ -44,7 +43,6 @@ const EditTaskModal = ({ visible, onCancel, onEditTask, taskToEdit }) => {
     onCancel();
   };
 
-  // Função para lidar com a mudança de arquivo no Upload
   const handleUploadChange = ({ fileList }) => {
     setFileList(fileList);
   };
@@ -87,7 +85,7 @@ const EditTaskModal = ({ visible, onCancel, onEditTask, taskToEdit }) => {
         maxCount={1}
         listType="picture"
         accept="image/*"
-        onChange={handleUploadChange}  
+        onChange={handleUploadChange}
       >
         <Button icon={<UploadOutlined />}>Carregar Imagem</Button>
       </Upload>
@@ -95,4 +93,8 @@ const EditTaskModal = ({ visible, onCancel, onEditTask, taskToEdit }) => {
   );
 };
 
-export default EditTaskModal;
+const mapDispatchToProps = (dispatch) => ({
+  updateTask: (task) => dispatch(updateTask(task)),
+});
+
+export default connect(null, mapDispatchToProps)(EditTaskModal);

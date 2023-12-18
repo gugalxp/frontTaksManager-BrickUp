@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { Modal, Button, Input, Upload, message } from 'antd';
+import { Modal, Button, Input, Upload, message, Select } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
+
+const { Option } = Select;
 
 const NewTaskModal = ({ visible, onCancel, onAddTask }) => {
   const [fileList, setFileList] = useState([]);
   const [title, setTitle] = useState('');
-  const [modalKey, setModalKey] = useState(null); // Adicione o estado para a chave única
+  const [status, setStatus] = useState(false); // Estado para o status da tarefa
+  const [modalKey, setModalKey] = useState(null);
 
   const handleAddTask = () => {
     if (!title) {
@@ -13,16 +16,22 @@ const NewTaskModal = ({ visible, onCancel, onAddTask }) => {
       return;
     }
 
+    if (title.length > 30) {
+      message.error('O título não pode ter mais de 30 caracteres.');
+      return;
+    }
+
     // Chame a função onAddTask com os dados da nova tarefa
     onAddTask({
       title: title,
-      status: 'Pendente',
-      image: fileList[0]?.url,
+      status: status,
+      completed: status,
+      photoPath: fileList[0]?.url,
     });
 
     setFileList([]);
     setTitle('');
-    setModalKey(null); // Limpe a chave única
+    setModalKey(null);
     onCancel();
   };
 
@@ -30,8 +39,15 @@ const NewTaskModal = ({ visible, onCancel, onAddTask }) => {
     setFileList(fileList);
   };
 
+  const handleStatusChange = (value) => {
+    if (value === "Concluído") setStatus(true);  
+    
+    
+    if (value === "Pendente") setStatus(false)
+  };
+
   const uploadProps = {
-    beforeUpload: file => {
+    beforeUpload: (file) => {
       // Validar o tipo de arquivo, tamanho, etc.
       const isImage = file.type.startsWith('image/');
       if (!isImage) {
@@ -48,7 +64,7 @@ const NewTaskModal = ({ visible, onCancel, onAddTask }) => {
       title="Adicionar Nova Tarefa"
       visible={visible}
       onCancel={onCancel}
-      key={modalKey} // Use a chave única para o componente Modal
+      key={modalKey}
       footer={[
         <Button key="cancel" onClick={onCancel}>
           Cancelar
@@ -60,14 +76,21 @@ const NewTaskModal = ({ visible, onCancel, onAddTask }) => {
     >
       {/* Campos de formulário */}
       <Input
-        placeholder='Title'
+        placeholder="Título"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         style={{ marginBottom: '10px' }}
       />
-      
-      {/* Campo Status Pendente (não editável) */}
-      <Input value="Pendente" disabled style={{ marginBottom: '10px' }} />
+
+      <Select
+        value={status ? "Concluído" :  "Pendente"}
+        onChange={handleStatusChange}  
+        style={{ marginBottom: '10px', width: '100%' }}
+      >
+        <Option value="Pendente">Pendente</Option>
+        <Option value="Concluído">Concluído</Option>
+        {/* Adicione mais opções conforme necessário */}
+      </Select>
 
       {/* Upload de Imagem */}
       <Upload {...uploadProps} maxCount={1} listType="picture" accept="image/*">
