@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { Modal, Button, Input, Upload, message, Select } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
+import { connect } from 'react-redux';
+import { addTask, fetchTasks } from '../actions/taskActions';
 
 const { Option } = Select;
 
-const NewTaskModal = ({ visible, onCancel, onAddTask }) => {
+const NewTaskModal = ({ visible, onCancel, addTask, fetchTasks }) => {
   const [fileList, setFileList] = useState([]);
   const [title, setTitle] = useState('');
-  const [status, setStatus] = useState(false); // Estado para o status da tarefa
+  const [status, setStatus] = useState(false);
   const [modalKey, setModalKey] = useState(null);
 
-  const handleAddTask = () => {
+  const handleAddTask = async () => {
     if (!title) {
       message.error('Por favor, insira uma descrição para a tarefa.');
       return;
@@ -20,19 +22,31 @@ const NewTaskModal = ({ visible, onCancel, onAddTask }) => {
       message.error('O título não pode ter mais de 30 caracteres.');
       return;
     }
+    
+    if (!fileList.length) {
+      message.error('Por favor, inclua uma imagem.');
+      return;
+    }
+    
+    const file = fileList[0].originFileObj;
 
-    // Chame a função onAddTask com os dados da nova tarefa
-    onAddTask({
-      title: title,
-      status: status,
-      completed: status,
-      photoPath: fileList[0]?.url,
-    });
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('completed', status);
+    formData.append('photoPath', file);
 
-    setFileList([]);
-    setTitle('');
-    setModalKey(null);
-    onCancel();
+    try {
+      await addTask(formData);
+      fetchTasks();
+
+      setFileList([]);
+      setTitle('');
+      setModalKey(null);
+      onCancel();
+    } catch (error) {
+      console.error('Erro ao adicionar a tarefa:', error.message);
+      message.error('Erro ao adicionar a tarefa. Por favor, tente novamente.');
+    }
   };
 
   const handleUploadChange = ({ fileList }) => {
@@ -40,15 +54,11 @@ const NewTaskModal = ({ visible, onCancel, onAddTask }) => {
   };
 
   const handleStatusChange = (value) => {
-    if (value === "Concluído") setStatus(true);  
-    
-    
-    if (value === "Pendente") setStatus(false)
+    setStatus(value === 'Concluído');
   };
 
   const uploadProps = {
     beforeUpload: (file) => {
-      // Validar o tipo de arquivo, tamanho, etc.
       const isImage = file.type.startsWith('image/');
       if (!isImage) {
         message.error('Por favor, faça upload apenas de imagens!');
@@ -82,16 +92,14 @@ const NewTaskModal = ({ visible, onCancel, onAddTask }) => {
       />
 
       <Select
-        value={status ? "Concluído" :  "Pendente"}
-        onChange={handleStatusChange}  
+        value={status ? 'Concluído' : 'Pendente'}
+        onChange={handleStatusChange}
         style={{ marginBottom: '10px', width: '100%' }}
       >
         <Option value="Pendente">Pendente</Option>
         <Option value="Concluído">Concluído</Option>
-        {/* Adicione mais opções conforme necessário */}
       </Select>
 
-      {/* Upload de Imagem */}
       <Upload {...uploadProps} maxCount={1} listType="picture" accept="image/*">
         <Button icon={<UploadOutlined />}>Carregar Imagem</Button>
       </Upload>
@@ -99,4 +107,9 @@ const NewTaskModal = ({ visible, onCancel, onAddTask }) => {
   );
 };
 
-export default NewTaskModal;
+const mapDispatchToProps = (dispatch) => ({
+  addTask: (formData) => dispatch(addTask(formData)),
+  fetchTasks: () => dispatch(fetchTasks()),
+});
+
+export default connect(null, mapDispatchToProps)(NewTaskModal);

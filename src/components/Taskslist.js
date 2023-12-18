@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Space, Button, Tag, Modal, message, Empty } from 'antd';
-import { EditOutlined, DeleteOutlined, PictureOutlined, ProfileOutlined, InboxOutlined  } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, PictureOutlined, ProfileOutlined, InboxOutlined } from '@ant-design/icons';
 import { connect } from 'react-redux';
 import { fetchTasks, deleteTask, markTaskCompleted } from '../actions/taskActions';
 import EditTaskModal from './EditTaskModal';
@@ -15,13 +15,13 @@ const TaskList = ({ tasks, error, fetchTasks, deleteTask, markTaskCompleted }) =
     fetchTasks();
   }, [fetchTasks]);
 
-  const dataSource = tasks
+  const dataSource = Array.isArray(tasks)
     ? tasks.map((task) => ({
-        key: task.id,
-        task: task.title,
-        status: task.completed ? 'Concluído' : 'Pendente',
-        image: task.photoPath,
-      }))
+      key: task.id,
+      task: task.title,
+      status: task.completed ? 'Concluído' : 'Pendente',
+      image: task.photoPath, // Supondo que task.photoPath é uma string base64
+    }))
     : [];
 
   const columns = [
@@ -128,27 +128,27 @@ const TaskList = ({ tasks, error, fetchTasks, deleteTask, markTaskCompleted }) =
   return (
     <>
       {dataSource.length === 0 ? (
-      <Empty
-        image={<InboxOutlined style={{  marginTop: '33px', fontSize: 60, color: '#000000E0 ' }} />}
-        description={<span>Não há tarefas para mostrar.</span>}
-      />
-    ) : (
-      <Table
-        dataSource={dataSource}
-        columns={columns}
-        bordered
-        title={() => <h2 style={{ fontSize: '25px' }}>Lista de Tarefas  <ProfileOutlined/></h2>}
-        pagination={{ pageSize: 5 }}
-        style={{ backgroundColor: '#fff', borderRadius: '8px' }}
-      />
-    )}
+        <Empty
+          image={<InboxOutlined style={{ marginTop: '33px', fontSize: 60, color: '#000000E0 ' }} />}
+          description={<span>Não há tarefas para mostrar.</span>}
+        />
+      ) : (
+        <Table
+          dataSource={dataSource}
+          columns={columns}
+          bordered
+          title={() => <h2 style={{ fontSize: '25px' }}>Lista de Tarefas  <ProfileOutlined /></h2>}
+          pagination={{ pageSize: 5 }}
+          style={{ backgroundColor: '#fff', borderRadius: '8px' }}
+        />
+      )}
       <Modal
         visible={viewImageModalVisible}
         onCancel={closeViewImageModal}
         footer={null}
         width={800}
       >
-        {selectedImage && <img src={selectedImage} alt="Imagem da Tarefa" style={{ width: '100%', height: '100%' }} />}
+        {selectedImage && <img src={`data:image/png;base64,${selectedImage}`} alt="Imagem da Tarefa" style={{ width: '100%', height: '100%' }} />}
       </Modal>
       <EditTaskModal
         visible={editModalVisible}

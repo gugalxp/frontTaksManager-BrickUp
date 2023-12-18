@@ -23,6 +23,7 @@ const fetchTasksFromApi = async () => {
   try {
     const response = await fetch(`${API_BASE_URL}/tasks`);
     const data = await response.json();
+    console.log("data", data)
     return data;
   } catch (error) {
     console.error('Error fetching tasks:', error);
@@ -34,13 +35,9 @@ const addTaskToApi = async (task) => {
   try {
     const response = await fetch(`${API_BASE_URL}/tasks`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(task),
+      body: task,
     });
-    const data = await response.json();
-    return data;
+    return response;
   } catch (error) {
     console.error('Error adding task:', error);
     throw error;
@@ -102,7 +99,6 @@ function* fetchTasksSaga() {
 function* addTaskSaga(action) {
   try {
     const newTask = yield call(addTaskToApi, action.payload);
-    console.log("newTask: ", newTask)
     yield put(addTaskSuccess(newTask));
   } catch (error) {
     yield put(addTaskFailure(error.message || 'Erro ao adicionar tarefa.'));
