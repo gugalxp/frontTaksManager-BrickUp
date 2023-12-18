@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Space, Button, Tag, Modal, message } from 'antd';
-import { EditOutlined, DeleteOutlined, PictureOutlined, ProfileOutlined } from '@ant-design/icons';
+import { Table, Space, Button, Tag, Modal, message, Empty } from 'antd';
+import { EditOutlined, DeleteOutlined, PictureOutlined, ProfileOutlined, InboxOutlined  } from '@ant-design/icons';
 import { connect } from 'react-redux';
 import { fetchTasks, deleteTask, markTaskCompleted } from '../actions/taskActions';
 import EditTaskModal from './EditTaskModal';
@@ -127,6 +127,12 @@ const TaskList = ({ tasks, error, fetchTasks, deleteTask, markTaskCompleted }) =
 
   return (
     <>
+      {dataSource.length === 0 ? (
+      <Empty
+        image={<InboxOutlined style={{  marginTop: '33px', fontSize: 60, color: '#000000E0 ' }} />}
+        description={<span>Não há tarefas para mostrar.</span>}
+      />
+    ) : (
       <Table
         dataSource={dataSource}
         columns={columns}
@@ -135,6 +141,7 @@ const TaskList = ({ tasks, error, fetchTasks, deleteTask, markTaskCompleted }) =
         pagination={{ pageSize: 5 }}
         style={{ backgroundColor: '#fff', borderRadius: '8px' }}
       />
+    )}
       <Modal
         visible={viewImageModalVisible}
         onCancel={closeViewImageModal}
