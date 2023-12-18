@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Space, Button, Tag, Modal, message } from 'antd';
-import { EditOutlined, DeleteOutlined, CheckOutlined, PictureOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, PictureOutlined, ProfileOutlined } from '@ant-design/icons';
 import { connect } from 'react-redux';
-import { fetchTasks, deleteTask } from '../actions/taskActions';
+import { fetchTasks, deleteTask, markTaskCompleted } from '../actions/taskActions';
 import EditTaskModal from './EditTaskModal';
 
-const TaskList = ({ tasks, error, fetchTasks, deleteTask }) => {
+const TaskList = ({ tasks, error, fetchTasks, deleteTask, markTaskCompleted }) => {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [viewImageModalVisible, setViewImageModalVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState('');
@@ -24,7 +24,6 @@ const TaskList = ({ tasks, error, fetchTasks, deleteTask }) => {
       }))
     : [];
 
-    // console.log("dataSource:", dataSource)
   const columns = [
     {
       title: 'Tarefa',
@@ -64,8 +63,14 @@ const TaskList = ({ tasks, error, fetchTasks, deleteTask }) => {
           <Button type="danger" icon={<DeleteOutlined />} onClick={() => handleDelete(record.key)}>
             Excluir
           </Button>
-          <Button icon={<CheckOutlined />} onClick={() => handleComplete(record.key)}>
-            Concluir
+          <Button
+            onClick={() => handleComplete(record.key, record.status === 'Concluído')}
+            style={{
+              backgroundColor: record.status === 'Concluído' ? 'green' : null,
+              color: record.status === 'Concluído' ? 'white' : null,
+            }}
+          >
+            {record.status === 'Concluído' ? 'Concluído' : 'Concluir'}
           </Button>
         </Space>
       ),
@@ -88,13 +93,20 @@ const TaskList = ({ tasks, error, fetchTasks, deleteTask }) => {
       message.error('Erro ao excluir tarefa.');
     }
   };
-  
-  const handleComplete = (key) => {
-    console.log(`Concluir tarefa com a chave ${key}`);
+
+  const handleComplete = (key, isCompleted) => {
+    if (!isCompleted) {
+      markTaskCompleted(key);
+      setTimeout(() => {
+        fetchTasks();
+      }, 500);
+      message.success('Tarefa marcada como concluída!');
+    } else {
+      message.warning('Esta tarefa já está concluída.');
+    }
   };
 
   const handleViewImage = (imageUrl) => {
-
     if (imageUrl) {
       setSelectedImage(imageUrl);
       setViewImageModalVisible(true);
@@ -119,7 +131,7 @@ const TaskList = ({ tasks, error, fetchTasks, deleteTask }) => {
         dataSource={dataSource}
         columns={columns}
         bordered
-        title={() => <h2>Lista de Tarefas</h2>}
+        title={() => <h2 style={{ fontSize: '25px' }}>Lista de Tarefas  <ProfileOutlined/></h2>}
         pagination={{ pageSize: 5 }}
         style={{ backgroundColor: '#fff', borderRadius: '8px' }}
       />
@@ -129,7 +141,7 @@ const TaskList = ({ tasks, error, fetchTasks, deleteTask }) => {
         footer={null}
         width={800}
       >
-        {selectedImage && <img src="http://localhost:3000/e8d001f1-0ca2-4b00-adb4-ebf777331c3e" alt="Imagem da Tarefa" style={{ width: '100%', height: '100%' }} />}
+        {selectedImage && <img src={selectedImage} alt="Imagem da Tarefa" style={{ width: '100%', height: '100%' }} />}
       </Modal>
       <EditTaskModal
         visible={editModalVisible}
@@ -148,6 +160,7 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => ({
   fetchTasks: () => dispatch(fetchTasks()),
   deleteTask: (taskId) => dispatch(deleteTask(taskId)),
+  markTaskCompleted: (taskId) => dispatch(markTaskCompleted(taskId)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(TaskList);

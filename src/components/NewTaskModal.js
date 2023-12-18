@@ -74,7 +74,6 @@ const NewTaskModal = ({ visible, onCancel, onAddTask }) => {
         </Button>,
       ]}
     >
-      {/* Campos de formulário */}
       <Input
         placeholder="Título"
         value={title}

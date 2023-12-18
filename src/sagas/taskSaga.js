@@ -4,6 +4,7 @@ import {
   ADD_TASK,
   UPDATE_TASK,
   DELETE_TASK,
+  MARK_TASK_COMPLETED,
   fetchTasksSuccess,
   fetchTasksFailure,
   addTaskSuccess,
@@ -12,6 +13,8 @@ import {
   updateTaskFailure,
   deleteTaskSuccess,
   deleteTaskFailure,
+  markTaskCompletedSuccess,
+  markTaskCompletedFailure,
 } from '../actions/taskActions';
 
 const API_BASE_URL = 'http://localhost:8080';
@@ -74,6 +77,19 @@ const deleteTaskFromApi = async (taskId) => {
   }
 };
 
+const markTaskCompletedInApi = async (taskId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/tasks/modifyStatus/${taskId}`, {
+      method: 'POST', // ou o método HTTP correto para modificar o status
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error marking task as completed:', error);
+    throw error;
+  }
+};
+
 function* fetchTasksSaga() {
   try {
     const tasks = yield call(fetchTasksFromApi);
@@ -111,11 +127,21 @@ function* deleteTaskSaga(action) {
   }
 }
 
+function* markTaskCompletedSaga(action) {
+  try {
+    const markedTaskId = yield call(markTaskCompletedInApi, action.payload);
+    yield put(markTaskCompletedSuccess(markedTaskId));
+  } catch (error) {
+    yield put(markTaskCompletedFailure(error.message || 'Erro ao marcar tarefa como concluída.'));
+  }
+}
+
 function* taskSaga() {
   yield takeLatest(FETCH_TASKS, fetchTasksSaga);
   yield takeLatest(ADD_TASK, addTaskSaga);
   yield takeLatest(UPDATE_TASK, updateTaskSaga);
   yield takeLatest(DELETE_TASK, deleteTaskSaga);
+  yield takeLatest(MARK_TASK_COMPLETED, markTaskCompletedSaga);
 }
 
 export default taskSaga;
