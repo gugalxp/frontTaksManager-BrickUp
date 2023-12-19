@@ -18,8 +18,8 @@ const NewTaskModal = ({ visible, onCancel, addTask, fetchTasks }) => {
       return;
     }
 
-    if (title.length > 30) {
-      message.error('O título não pode ter mais de 30 caracteres.');
+    if (title.length > 40) {
+      message.error('O título não pode ter mais de 40 caracteres.');
       return;
     }
 

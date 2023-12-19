@@ -18,8 +18,8 @@ const EditTaskModal = ({ taskKey, visible, onCancel, updateTask, fetchTasks }) =
       return;
     }
 
-    if (title.length > 30) {
-      antdMessage.error('O título não pode ter mais de 30 caracteres.');
+    if (title.length > 40) {
+      antdMessage.error('O título não pode ter mais de 40 caracteres.');
       return;
     }
 
