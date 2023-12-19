@@ -32,34 +32,55 @@ const fetchTasksFromApi = async () => {
 };
 
 const addTaskToApi = async (task) => {
+
   try {
-    const response = await fetch(`${API_BASE_URL}/tasks`, {
+    const formData = new FormData();
+
+    formData.append('title', task.title);
+    formData.append('completed', task.completed);
+    formData.append('photoPath', task.photoPath);
+
+    const response = await fetch(`${API_BASE_URL}/tasks/tasks`, {
       method: 'POST',
-      body: task,
+      body: formData,
     });
-    return response;
+    return response; 
   } catch (error) {
     console.error('Error adding task:', error);
     throw error;
   }
 };
 
+
 const updateTaskToApi = async (task) => {
+  console.log("title: ", task.title)
+  console.log("completed: ", task.completed)
+  console.log("photoPath: ", task.photoPath)
+  console.log("id: ", task.id)
+
   try {
+    const formData = new FormData();
+
+    formData.append('title', task.title);
+    formData.append('completed', task.completed);
+    formData.append('photoPath', task.photoPath);
+
+    console.log("data UPDATE", formData);
+
     const response = await fetch(`${API_BASE_URL}/tasks/${task.id}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(task),
+      body: formData,
     });
-    const data = await response.json();
-    return data;
+
+    console.log("data UPDATE", response);
+    return response;
   } catch (error) {
     console.error('Error updating task:', error);
     throw error;
   }
 };
+
+
 
 const deleteTaskFromApi = async (taskId) => {
   try {
@@ -77,7 +98,7 @@ const deleteTaskFromApi = async (taskId) => {
 const markTaskCompletedInApi = async (taskId) => {
   try {
     const response = await fetch(`${API_BASE_URL}/tasks/modifyStatus/${taskId}`, {
-      method: 'POST', // ou o método HTTP correto para modificar o status
+      method: 'POST',
     });
     const data = await response.json();
     return data;

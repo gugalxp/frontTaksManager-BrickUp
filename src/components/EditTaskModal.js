@@ -2,17 +2,17 @@ import React, { useState } from 'react';
 import { Modal, Button, Input, Upload, message as antdMessage, Select } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { connect } from 'react-redux';
-import { updateTask } from '../actions/taskActions';
+import { updateTask, fetchTasks } from '../actions/taskActions';
 
 const { Option } = Select;
 
-const EditTaskModal = ({ taskKey, visible, onCancel, updateTask }) => {
+const EditTaskModal = ({ taskKey, visible, onCancel, updateTask, fetchTasks }) => {
   const [fileList, setFileList] = useState([]);
   const [title, setTitle] = useState('');
-  const [status, setStatus] = useState('Pendente');
+  const [status, setStatus] = useState(false);
   const [modalKey, setModalKey] = useState(null);
 
-  const handleEditTask = () => {
+  const handleEditTask = async () => {
     if (!title) {
       antdMessage.error('Por favor, insira um título para a tarefa.');
       return;
@@ -23,28 +23,52 @@ const EditTaskModal = ({ taskKey, visible, onCancel, updateTask }) => {
       return;
     }
 
-    const photoPath = fileList.length > 0 ? fileList[0].url : null;
+    if (!fileList.length) {
+      antdMessage.error('Por favor, inclua uma imagem.');
+      return;
+    }
 
-    // Usando taskKey como o identificador na ação updateTask
-    updateTask({
+    const file = fileList[0].originFileObj;
+
+    const taskData = {
       id: taskKey,
       title: title,
-      completed: status === 'Concluído',
-      photoPath: photoPath,
-    });
+      completed: status,
+      photoPath: file,
+    };
 
-    // Mostra a mensagem de sucesso ao editar a tarefa
-    antdMessage.success('Tarefa editada com sucesso!');
+    try {
+      await updateTask(taskData);
+      antdMessage.success('Tarefa editada com sucesso!');
+      setFileList([]);
+      setTitle('');
+      setStatus(status);
+      setModalKey(null);
+      onCancel();
 
-    setFileList([]);
-    setTitle('');
-    setStatus('Pendente');
-    setModalKey(null);
-    onCancel();
+      setTimeout(() => {
+        fetchTasks();
+      }, 500);
+    } catch (error) {
+      console.error('Erro ao editar a tarefa:', error.message);
+      antdMessage.error('Erro ao editar a tarefa. Por favor, tente novamente.');
+    }
   };
 
   const handleUploadChange = ({ fileList }) => {
     setFileList(fileList);
+  };
+
+  const uploadProps = {
+    beforeUpload: (file) => {
+      const isImage = file.type.startsWith('image/');
+      if (!isImage) {
+        antdMessage.error('Por favor, faça upload apenas de imagens!');
+      }
+      return isImage;
+    },
+    fileList,
+    onChange: handleUploadChange,
   };
 
   return (
@@ -72,8 +96,8 @@ const EditTaskModal = ({ taskKey, visible, onCancel, updateTask }) => {
 
       {/* Campo Status */}
       <Select
-        value={status}
-        onChange={(value) => setStatus(value)}
+        value={status ? 'Concluído' : 'Pendente'}
+        onChange={(value) => setStatus(value === "Concluído")}
         style={{ marginBottom: '10px', width: '100%' }}
       >
         <Option value="Pendente">Pendente</Option>
@@ -85,7 +109,7 @@ const EditTaskModal = ({ taskKey, visible, onCancel, updateTask }) => {
         maxCount={1}
         listType="picture"
         accept="image/*"
-        onChange={handleUploadChange}
+        {...uploadProps}
       >
         <Button icon={<UploadOutlined />}>Carregar Imagem</Button>
       </Upload>
@@ -94,7 +118,8 @@ const EditTaskModal = ({ taskKey, visible, onCancel, updateTask }) => {
 };
 
 const mapDispatchToProps = (dispatch) => ({
-  updateTask: (task) => dispatch(updateTask(task)),
+  updateTask: (taskData) => dispatch(updateTask(taskData)),
+  fetchTasks: () => dispatch(fetchTasks()),
 });
 
 export default connect(null, mapDispatchToProps)(EditTaskModal);

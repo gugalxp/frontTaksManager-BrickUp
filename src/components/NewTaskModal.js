@@ -22,22 +22,25 @@ const NewTaskModal = ({ visible, onCancel, addTask, fetchTasks }) => {
       message.error('O título não pode ter mais de 30 caracteres.');
       return;
     }
-    
+
     if (!fileList.length) {
       message.error('Por favor, inclua uma imagem.');
       return;
     }
-    
+
     const file = fileList[0].originFileObj;
 
-    const formData = new FormData();
-    formData.append('title', title);
-    formData.append('completed', status);
-    formData.append('photoPath', file);
+    const taskData = {
+      title: title,
+      completed: status,
+      photoPath: file,
+    };
 
     try {
-      await addTask(formData);
-      fetchTasks();
+      await addTask(taskData);
+      setTimeout(() => {
+        fetchTasks();
+      }, 500);
 
       setFileList([]);
       setTitle('');

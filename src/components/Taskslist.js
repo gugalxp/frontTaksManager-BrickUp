@@ -15,12 +15,12 @@ const TaskList = ({ tasks, error, fetchTasks, deleteTask, markTaskCompleted }) =
     fetchTasks();
   }, [fetchTasks]);
 
-  const dataSource = Array.isArray(tasks)
+  const dataSource = tasks
     ? tasks.map((task) => ({
       key: task.id,
       task: task.title,
       status: task.completed ? 'Concluído' : 'Pendente',
-      image: task.photoPath, // Supondo que task.photoPath é uma string base64
+      image: task.photoPath, 
     }))
     : [];
 
