@@ -47,7 +47,6 @@ const NewTaskModal = ({ visible, onCancel, addTask, fetchTasks }) => {
       setModalKey(null);
       onCancel();
     } catch (error) {
-      console.error('Erro ao adicionar a tarefa:', error.message);
       message.error('Erro ao adicionar a tarefa. Por favor, tente novamente.');
     }
   };

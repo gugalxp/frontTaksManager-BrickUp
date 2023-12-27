@@ -50,7 +50,6 @@ const EditTaskModal = ({ taskKey, visible, onCancel, updateTask, fetchTasks }) =
         fetchTasks();
       }, 500);
     } catch (error) {
-      console.error('Erro ao editar a tarefa:', error.message);
       antdMessage.error('Erro ao editar a tarefa. Por favor, tente novamente.');
     }
   };

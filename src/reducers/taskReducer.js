@@ -1,15 +1,16 @@
-// reducers/taskReducer.js
 import {
   ADD_TASK,
   UPDATE_TASK_SUCCESS,
   DELETE_TASK_SUCCESS,
   DELETE_TASK_FAILURE,
   FETCH_TASKS_SUCCESS,
-  MARK_TASK_COMPLETED_SUCCESS, // Adicionada ação para marcar tarefa como concluída
-} from '../actions/taskActions'; // Verifique se o caminho está correto
+  FETCH_TASKS_LOADING,
+  MARK_TASK_COMPLETED_SUCCESS,
+} from '../actions/taskActions';
 
 const initialState = {
   tasks: [],
+  loading: false,
 };
 
 const taskReducer = (state = initialState, action) => {
@@ -33,12 +34,17 @@ const taskReducer = (state = initialState, action) => {
         tasks: state.tasks.filter((task) => task.id !== action.payload),
       };
     case DELETE_TASK_FAILURE:
-      // Handle failure, you may want to log an error or show a notification
       return state;
-    case FETCH_TASKS_SUCCESS:
+      case FETCH_TASKS_LOADING:
       return {
         ...state,
+        loading: action.payload,
+      };
+    case FETCH_TASKS_SUCCESS:
+    return {
+        ...state,
         tasks: action.payload,
+        loading: false,
       };
     case MARK_TASK_COMPLETED_SUCCESS:
       const markedCompletedTasks = state.tasks.map((task) =>

@@ -4,20 +4,14 @@ import NewTaskModal from '../../components/NewTaskModal';
 import TaskList from '../../components/Taskslist';
 import EditTaskModal from '../../components/EditTaskModal';
 import { connect } from 'react-redux';
-import { addTask } from '../../actions/taskActions';
+import { addTask, fetchTasks } from '../../actions/taskActions';
 
-const Home = ({ addTask }) => {
+const Home = ({ addTask, loading, fetchTasks }) => {
   const [modalVisible, setModalVisible] = useState(false);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      setLoading(false);
-    };
-
-    fetchData();
-  }, []);
+    useEffect(() => {
+    fetchTasks();
+  }, [fetchTasks]);
 
   const openEditModal = (task) => {
     handleOpenModal();
@@ -39,7 +33,10 @@ const Home = ({ addTask }) => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
       {loading ? (
-        <Spin size="large" />
+        <div style={{ textAlign: 'center' }}>
+          <Spin size="large" />
+          <p>Carregando...</p>
+        </div>
       ) : (
         <div style={{
           minWidth: '50%',
@@ -68,8 +65,16 @@ const Home = ({ addTask }) => {
   );
 };
 
+const mapStateToProps = (state) => {
+  return {
+    loading: state.loading,
+  };
+};
+
+
 const mapDispatchToProps = (dispatch) => ({
+  fetchTasks: () => dispatch(fetchTasks()),
   addTask: (task) => dispatch(addTask(task)),
 });
 
-export default connect(null, mapDispatchToProps)(Home);
+export default connect(mapStateToProps, mapDispatchToProps)(Home);

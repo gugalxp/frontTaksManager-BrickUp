@@ -15,6 +15,7 @@ import {
   deleteTaskFailure,
   markTaskCompletedSuccess,
   markTaskCompletedFailure,
+  FETCH_TASKS_LOADING,
 } from '../actions/taskActions';
 
 const API_BASE_URL = 'http://localhost:8080';
@@ -23,10 +24,8 @@ const fetchTasksFromApi = async () => {
   try {
     const response = await fetch(`${API_BASE_URL}/tasks`);
     const data = await response.json();
-    console.log("data", data)
     return data;
   } catch (error) {
-    console.error('Error fetching tasks:', error);
     throw error;
   }
 };
@@ -44,19 +43,13 @@ const addTaskToApi = async (task) => {
       method: 'POST',
       body: formData,
     });
-    return response; 
+    return response;
   } catch (error) {
-    console.error('Error adding task:', error);
     throw error;
   }
 };
 
-
 const updateTaskToApi = async (task) => {
-  console.log("title: ", task.title)
-  console.log("completed: ", task.completed)
-  console.log("photoPath: ", task.photoPath)
-  console.log("id: ", task.id)
 
   try {
     const formData = new FormData();
@@ -65,22 +58,16 @@ const updateTaskToApi = async (task) => {
     formData.append('completed', task.completed);
     formData.append('photoPath', task.photoPath);
 
-    console.log("data UPDATE", formData);
-
     const response = await fetch(`${API_BASE_URL}/tasks/${task.id}`, {
       method: 'PUT',
       body: formData,
     });
 
-    console.log("data UPDATE", response);
     return response;
   } catch (error) {
-    console.error('Error updating task:', error);
     throw error;
   }
 };
-
-
 
 const deleteTaskFromApi = async (taskId) => {
   try {
@@ -90,7 +77,6 @@ const deleteTaskFromApi = async (taskId) => {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Error deleting task:', error);
     throw error;
   }
 };
@@ -103,16 +89,20 @@ const markTaskCompletedInApi = async (taskId) => {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Error marking task as completed:', error);
     throw error;
   }
 };
 
 function* fetchTasksSaga() {
   try {
+
+    yield put({ type: FETCH_TASKS_LOADING, payload: true });
     const tasks = yield call(fetchTasksFromApi);
+    yield put({ type: FETCH_TASKS_LOADING, payload: false });
     yield put(fetchTasksSuccess(tasks));
+
   } catch (error) {
+    yield put({ type: FETCH_TASKS_LOADING, payload: false });
     yield put(fetchTasksFailure(error.message || 'Erro ao obter tarefas.'));
   }
 }
