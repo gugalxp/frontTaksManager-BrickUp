@@ -13,7 +13,7 @@
   - Ant Design (Opcional)
   - Redux
   - Redux-Saga
-  - 
+   
 ## Endpoints do Controller
 
 ### GET /tasks
