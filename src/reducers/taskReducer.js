@@ -4,6 +4,7 @@ import {
   DELETE_TASK_SUCCESS,
   DELETE_TASK_FAILURE,
   FETCH_TASKS_SUCCESS,
+  FETCH_TASKS_WITHOUT_LOADING,
   FETCH_TASKS_LOADING,
   MARK_TASK_COMPLETED_SUCCESS,
 } from '../actions/taskActions';
@@ -35,16 +36,21 @@ const taskReducer = (state = initialState, action) => {
       };
     case DELETE_TASK_FAILURE:
       return state;
-      case FETCH_TASKS_LOADING:
+    case FETCH_TASKS_LOADING:
       return {
         ...state,
         loading: action.payload,
       };
     case FETCH_TASKS_SUCCESS:
-    return {
+      return {
         ...state,
         tasks: action.payload,
         loading: false,
+      };
+    case FETCH_TASKS_WITHOUT_LOADING:
+      return {
+        ...state,
+        tasks: action.payload,
       };
     case MARK_TASK_COMPLETED_SUCCESS:
       const markedCompletedTasks = state.tasks.map((task) =>

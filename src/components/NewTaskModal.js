@@ -74,7 +74,7 @@ const NewTaskModal = ({ visible, onCancel, addTask, fetchTasks }) => {
   return (
     <Modal
       title="Adicionar Nova Tarefa"
-      visible={visible}
+      open={visible}
       onCancel={onCancel}
       key={modalKey}
       footer={[

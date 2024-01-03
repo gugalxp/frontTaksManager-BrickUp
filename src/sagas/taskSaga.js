@@ -1,6 +1,8 @@
 import { put, takeLatest, call } from 'redux-saga/effects';
 import {
   FETCH_TASKS,
+  FETCH_TASKS_WITHOUT_LOADING,
+  FETCH_TASKS_LOADING,
   ADD_TASK,
   UPDATE_TASK,
   DELETE_TASK,
@@ -15,7 +17,6 @@ import {
   deleteTaskFailure,
   markTaskCompletedSuccess,
   markTaskCompletedFailure,
-  FETCH_TASKS_LOADING,
 } from '../actions/taskActions';
 
 const API_BASE_URL = 'http://localhost:8080';
@@ -30,19 +31,38 @@ const fetchTasksFromApi = async () => {
   }
 };
 
-const addTaskToApi = async (task) => {
+const fetchTasksWithoutLoadingFromApi = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/tasks`);
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
 
+const sendDataToApi = async (method, url, data) => {
   try {
     const formData = new FormData();
 
-    formData.append('title', task.title);
-    formData.append('completed', task.completed);
-    formData.append('photoPath', task.photoPath);
+    Object.keys(data).forEach((key) => {
+      formData.append(key, data[key]);
+    });
 
-    const response = await fetch(`${API_BASE_URL}/tasks/tasks`, {
-      method: 'POST',
+    const response = await fetch(`${API_BASE_URL}/${url}`, {
+      method,
       body: formData,
     });
+
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const addTaskToApi = async (task) => {
+  try {
+    const response = await sendDataToApi('POST', 'tasks/tasks', task);
     return response;
   } catch (error) {
     throw error;
@@ -50,19 +70,8 @@ const addTaskToApi = async (task) => {
 };
 
 const updateTaskToApi = async (task) => {
-
   try {
-    const formData = new FormData();
-
-    formData.append('title', task.title);
-    formData.append('completed', task.completed);
-    formData.append('photoPath', task.photoPath);
-
-    const response = await fetch(`${API_BASE_URL}/tasks/${task.id}`, {
-      method: 'PUT',
-      body: formData,
-    });
-
+    const response = await sendDataToApi('PUT', `tasks/${task.id}`, task);
     return response;
   } catch (error) {
     throw error;
@@ -103,6 +112,16 @@ function* fetchTasksSaga() {
 
   } catch (error) {
     yield put({ type: FETCH_TASKS_LOADING, payload: false });
+    yield put(fetchTasksFailure(error.message || 'Erro ao obter tarefas.'));
+  }
+}
+function* fetchTasksWithOutLoading() { 
+  try {
+
+    const tasks = yield call(fetchTasksWithoutLoadingFromApi);
+    yield put(fetchTasksSuccess(tasks));
+
+  } catch (error) {
     yield put(fetchTasksFailure(error.message || 'Erro ao obter tarefas.'));
   }
 }
@@ -149,6 +168,7 @@ function* taskSaga() {
   yield takeLatest(UPDATE_TASK, updateTaskSaga);
   yield takeLatest(DELETE_TASK, deleteTaskSaga);
   yield takeLatest(MARK_TASK_COMPLETED, markTaskCompletedSaga);
+  yield takeLatest(FETCH_TASKS_WITHOUT_LOADING, fetchTasksWithOutLoading);
 }
 
 export default taskSaga;

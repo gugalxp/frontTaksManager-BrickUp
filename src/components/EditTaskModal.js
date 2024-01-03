@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal, Button, Input, Upload, message as antdMessage, Select } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { connect } from 'react-redux';
@@ -6,11 +6,25 @@ import { updateTask, fetchTasks } from '../actions/taskActions';
 
 const { Option } = Select;
 
-const EditTaskModal = ({ taskKey, visible, onCancel, updateTask, fetchTasks }) => {
+const EditTaskModal = ({ data, visible, onCancel, updateTask, fetchTasks }) => {
   const [fileList, setFileList] = useState([]);
   const [title, setTitle] = useState('');
   const [status, setStatus] = useState(false);
   const [modalKey, setModalKey] = useState(null);
+  
+  useEffect(() => {
+
+    if (data?.status) {
+      setStatus(data.status === "Pendente" ? false : true);
+    }
+  }, [data?.status]);
+
+  useEffect(() => {
+
+    if (data?.task) {
+      setTitle(data.task);
+    }
+  }, [data?.task]);
 
   const handleEditTask = async () => {
     if (!title) {
@@ -31,7 +45,7 @@ const EditTaskModal = ({ taskKey, visible, onCancel, updateTask, fetchTasks }) =
     const file = fileList[0].originFileObj;
 
     const taskData = {
-      id: taskKey,
+      id: data?.key,
       title: title,
       completed: status,
       photoPath: file,
@@ -73,7 +87,7 @@ const EditTaskModal = ({ taskKey, visible, onCancel, updateTask, fetchTasks }) =
   return (
     <Modal
       title="Editar Tarefa"
-      visible={visible}
+      open={visible}
       onCancel={onCancel}
       key={modalKey}
       footer={[

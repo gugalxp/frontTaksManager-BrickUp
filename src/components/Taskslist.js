@@ -2,14 +2,14 @@
   import { Table, Space, Button, Tag, Modal, message, Empty } from 'antd';
   import { EditOutlined, DeleteOutlined, PictureOutlined, ProfileOutlined, InboxOutlined } from '@ant-design/icons';
   import { connect } from 'react-redux';
-  import { fetchTasks, deleteTask, markTaskCompleted } from '../actions/taskActions';
+  import { fetchTasks, deleteTask, markTaskCompleted, fetchTasksWithOutLoading } from '../actions/taskActions';
   import EditTaskModal from './EditTaskModal';
 
-  const TaskList = ({ loading, tasks, error, fetchTasks, deleteTask, markTaskCompleted }) => {
+  const TaskList = ({ fetchTasksWithOutLoading, loading, tasks, error, fetchTasks, deleteTask, markTaskCompleted }) => {
     const [editModalVisible, setEditModalVisible] = useState(false);
     const [viewImageModalVisible, setViewImageModalVisible] = useState(false);
     const [selectedImage, setSelectedImage] = useState('');
-    const [selectedTaskKey, setSelectedTaskKey] = useState(null);
+    const [selectedTask, setSelectedTask] = useState(null);
 
     const dataSource = tasks
       ? tasks.map((task) => ({
@@ -25,6 +25,7 @@
         title: 'Tarefa',
         dataIndex: 'task',
         key: 'task',
+        render: (text) => <div style={{ minWidth: '150px' }}>{text}</div>, 
       },
       {
         title: 'Status',
@@ -39,10 +40,10 @@
       {
         title: 'Imagem',
         key: 'image',
-        render: (_, record) => (
+        render: (_, data) => (
           <Button
             icon={<PictureOutlined />}
-            onClick={() => handleViewImage(record.image)}
+            onClick={() => handleViewImage(data.image)}
           >
             Ver Imagem
           </Button>
@@ -51,31 +52,31 @@
       {
         title: 'Ações',
         key: 'actions',
-        render: (_, record) => (
+        render: (_, data) => (
           <Space size="middle">
-            <Button type="primary" icon={<EditOutlined />} onClick={() => handleEditTask(record.key)}>
+            <Button type="primary" icon={<EditOutlined />} onClick={() => handleEditTask(data)}>
               Editar
             </Button>
-            <Button type="danger" icon={<DeleteOutlined />} onClick={() => handleDelete(record.key)}>
+            <Button type="danger" icon={<DeleteOutlined />} onClick={() => handleDelete(data.key)}>
               Excluir
             </Button>
             <Button
-              onClick={() => handleComplete(record.key, record.status === 'Concluído')}
+              onClick={() => handleComplete(data.key, data.status === 'Concluído')}
               style={{
-                backgroundColor: record.status === 'Concluído' ? 'green' : null,
-                color: record.status === 'Concluído' ? 'white' : null,
+                backgroundColor: data.status === 'Concluído' ? 'green' : null,
+                color: data.status === 'Concluído' ? 'white' : null,
               }}
             >
-              {record.status === 'Concluído' ? 'Concluído' : 'Concluir'}
+              {data.status === 'Concluído' ? 'Concluído' : 'Concluir'}
             </Button>
           </Space>
         ),
       },
     ];
 
-    const handleEditTask = (key) => {
+    const handleEditTask = (data) => {
       setEditModalVisible(true);
-      setSelectedTaskKey(key);
+      setSelectedTask(data);
     };
 
     const handleDelete = async (key) => {
@@ -83,7 +84,7 @@
         await deleteTask(key);
         message.success('Tarefa excluída com sucesso!');
         setTimeout(() => {
-          fetchTasks();
+          fetchTasksWithOutLoading();
         }, 500);
       } catch (error) {
         message.error('Erro ao excluir tarefa.');
@@ -113,7 +114,7 @@
 
     const closeEditModal = () => {
       setEditModalVisible(false);
-      setSelectedTaskKey(null);
+      setSelectedTask(null);
     };
 
     const closeViewImageModal = () => {
@@ -136,10 +137,11 @@
             title={() => <h2 style={{ fontSize: '25px' }}>Lista de Tarefas  <ProfileOutlined /></h2>}
             pagination={{ pageSize: 5 }}
             style={{ backgroundColor: '#fff', borderRadius: '8px' }}
+            scroll={{ x: true }}
           />
         )}
         <Modal
-          visible={viewImageModalVisible}
+          open={viewImageModalVisible}
           onCancel={closeViewImageModal}
           footer={null}
           width={800}
@@ -149,7 +151,7 @@
         <EditTaskModal
           visible={editModalVisible}
           onCancel={closeEditModal}
-          taskKey={selectedTaskKey}
+          data={selectedTask}
         />
       </>
     );
@@ -165,6 +167,7 @@
     fetchTasks: () => dispatch(fetchTasks()),
     deleteTask: (taskId) => dispatch(deleteTask(taskId)),
     markTaskCompleted: (taskId) => dispatch(markTaskCompleted(taskId)),
+    fetchTasksWithoutLoading: () => dispatch(fetchTasksWithOutLoading())
   });
 
   export default connect(mapStateToProps, mapDispatchToProps)(TaskList);

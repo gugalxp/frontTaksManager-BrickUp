@@ -9,7 +9,7 @@ import { addTask, fetchTasks } from '../../actions/taskActions';
 const Home = ({ addTask, loading, fetchTasks }) => {
   const [modalVisible, setModalVisible] = useState(false);
 
-    useEffect(() => {
+  useEffect(() => {
     fetchTasks();
   }, [fetchTasks]);
 
@@ -35,7 +35,6 @@ const Home = ({ addTask, loading, fetchTasks }) => {
       {loading ? (
         <div style={{ textAlign: 'center' }}>
           <Spin size="large" />
-          <p>Carregando...</p>
         </div>
       ) : (
         <div style={{

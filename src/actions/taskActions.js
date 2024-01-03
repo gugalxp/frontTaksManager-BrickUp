@@ -14,8 +14,10 @@ export const MARK_TASK_COMPLETED = 'MARK_TASK_COMPLETED';
 export const MARK_TASK_COMPLETED_SUCCESS = 'MARK_TASK_COMPLETED_SUCCESS';
 export const MARK_TASK_COMPLETED_FAILURE = 'MARK_TASK_COMPLETED_FAILURE';
 export const FETCH_TASKS_LOADING = 'FETCH_TASKS_LOADING';
+export const FETCH_TASKS_WITHOUT_LOADING= 'FETCH_TASKS_WITHOUT_LOADING';
 
 export const fetchTasks = () => ({ type: FETCH_TASKS });
+export const fetchTasksWithOutLoading = () => ({ type: FETCH_TASKS });
 export const fetchTasksSuccess = (tasks) => ({ type: FETCH_TASKS_SUCCESS, payload: tasks });
 export const fetchTasksFailure = (error) => ({ type: FETCH_TASKS_FAILURE, payload: error });
 export const addTask = (task) => ({ type: ADD_TASK, payload: task });
